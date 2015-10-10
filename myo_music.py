@@ -42,12 +42,12 @@ class Listener(libmyo.DeviceListener):
             for comp in self.orientation:
                 msg_orientation.add_arg(str(comp))
                 parts.append(str(comp))
-        msg_orientation.build()
+        msg_orientation = msg_orientation.build()
         client.send(msg_orientation)
 
         msg_pose = osc_message_builder.OscMessageBuilder(address = "/pose_{}".format(myo.value))
         msg_pose.add_arg(str(self.pose.name))
-        msg_pose.build()
+        msg_pose = msg_pose.build()
         client.send(msg_pose)
         parts.append(str(self.pose.name))
 
@@ -57,7 +57,7 @@ class Listener(libmyo.DeviceListener):
             for comp in self.emg:
                 msg_emg.add_arg(str(comp))
                 parts.append(str(comp))
-        msg_emg.build()
+        msg_emg = msg_emg.build()
         client.send(msg_emg)
 
 
@@ -66,7 +66,7 @@ class Listener(libmyo.DeviceListener):
             for comp in self.gyroscope:
                 msg_gyroscope.add_arg(str(comp))
                 parts.append(str(comp))
-        msg_gyroscope.build()
+        msg_gyroscope = msg_gyroscope.build()
         client.send(msg_gyroscope)
 
         msg_acceleration = osc_message_builder.OscMessageBuilder(address = "/acceleration_{}".format(myo.value))
@@ -74,7 +74,7 @@ class Listener(libmyo.DeviceListener):
             for comp in self.acceleration:
                 msg_acceleration.add_arg(str(comp))
                 parts.append(str(comp))
-        msg_acceleration.build()
+        msg_acceleration = msg_acceleration.build()
         client.send(msg_acceleration)
 
         end_line = '\r[' + str(myo.value) + ',' + ','.join(parts) + "]"
