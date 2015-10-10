@@ -1,4 +1,6 @@
 from __future__ import print_function
+from pythonosc import osc_message_builder
+from pythonosc import udp_client
 
 import myo as libmyo; libmyo.init()
 import time
@@ -24,6 +26,8 @@ class Listener(libmyo.DeviceListener):
         self.last_time = 0
 
     def output(self):
+        client = udp_client.UDPClient('127.0.0.1', 8000)
+        msg = osc_message_builder.OscMessageBuilder(address = '/data')
         ctime = time.time()
         if (ctime - self.last_time) < self.interval:
             return
@@ -41,6 +45,9 @@ class Listener(libmyo.DeviceListener):
             for comp in self.emg:
                 parts.append(str(comp).ljust(5))
         end_line = '\r[' + ','.join(parts) + "]"
+        msg.add_arg(end_line)
+        msg = msg.build()
+        client.send(msg)
         print(end_line.replace(" ", ""))
         sys.stdout.flush()
 
