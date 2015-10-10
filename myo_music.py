@@ -19,7 +19,7 @@ class Listener(libmyo.DeviceListener):
         super(Listener, self).__init__()
         self.orientation = None
         self.pose = libmyo.Pose.rest
-        self.emg_enabled = False
+        self.emg_enabled = True
         self.locked = False
         self.rssi = None
         self.emg = None
@@ -44,7 +44,7 @@ class Listener(libmyo.DeviceListener):
         if self.emg:
             for comp in self.emg:
                 parts.append(str(comp).ljust(5))
-        end_line = '\r[' + ','.join(parts) + "]"
+        end_line = '\r' + ','.join(parts) + ""
         msg.add_arg(end_line)
         msg = msg.build()
         client.send(msg)
