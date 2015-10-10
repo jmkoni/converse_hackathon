@@ -28,33 +28,57 @@ class Listener(libmyo.DeviceListener):
         self.last_time = 0
 
     def output(self, myo):
-        
+        global client
+
         ctime = time.time()
         if (ctime - self.last_time) < self.interval:
             return
         self.last_time = ctime
         parts = []
         # parts = [orientation.x, orientation.y, orientation.z, orientation.w, pose, emg1, emg2, emg3, emg4, emg5, emg6, emg7, emg8, gyro1, gyro2, gyro3, accel1, accel2, accel3]
-        
+
+        msg_orientation = osc_message_builder.OscMessageBuilder(address = "/orientation_{}".format(myo.value))
         if self.orientation:
             for comp in self.orientation:
+                msg_orientation.add_arg(str(comp))
                 parts.append(str(comp))
+        msg_orientation.build()
+        client.send(msg_orientation)
+
+        msg_pose = osc_message_builder.OscMessageBuilder(address = "/pose_{}".format(myo.value))
+        msg_pose.add_arg(str(self.pose.name))
+        msg_pose.build()
+        client.send(msg_pose)
         parts.append(str(self.pose.name))
+
+
+        msg_emg = osc_message_builder.OscMessageBuilder(address = "/emg_{}".format(myo.value))
         if self.emg:
             for comp in self.emg:
+                msg_emg.add_arg(str(comp))
                 parts.append(str(comp))
+        msg_emg.build()
+        client.send(msg_emg)
+
+
+        msg_gyroscope = osc_message_builder.OscMessageBuilder(address = "/gyroscope_{}".format(myo.value))
         if self.gyroscope:
             for comp in self.gyroscope:
+                msg_gyroscope.add_arg(str(comp))
                 parts.append(str(comp))
+        msg_gyroscope.build()
+        client.send(msg_gyroscope)
+
+        msg_acceleration = osc_message_builder.OscMessageBuilder(address = "/acceleration_{}".format(myo.value))
         if self.acceleration:
             for comp in self.acceleration:
+                msg_acceleration.add_arg(str(comp))
                 parts.append(str(comp))
+        msg_acceleration.build()
+        client.send(msg_acceleration)
+
         end_line = '\r[' + str(myo.value) + ',' + ','.join(parts) + "]"
-        global client
-        msg = osc_message_builder.OscMessageBuilder(address = "/data_{}".format(myo.value))
-        msg.add_arg(end_line)
-        msg = msg.build()
-        client.send(msg)
+
         print(end_line)
         sys.stdout.flush()
 
