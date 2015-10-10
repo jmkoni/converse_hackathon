@@ -32,7 +32,7 @@ class Listener(libmyo.DeviceListener):
         parts = []
         # [0.64031982421875][0.06585693359375][-0.08184814453125][-0.76092529296875][<Pose: rest>][ ][ ][-60][9    ][-4   ][-12  ][-40  ][3    ][-1   ][-12  ][-54  ]
 
-        # parts = [orientation.x, orientation.y, orientation.z, orientation.w, pose, emg_enabled?, locked?, rssi, emg1, emg2, emg3, emg4, emg5, emg6, emg7, emg8]
+        # parts = [orientation.x, orientation.y, orientation.z, orientation.w, pose, emg1, emg2, emg3, emg4, emg5, emg6, emg7, emg8]
         if self.orientation:
             for comp in self.orientation:
                 parts.append(str(comp).ljust(15))
@@ -59,7 +59,7 @@ class Listener(libmyo.DeviceListener):
         #     self.emg_enabled = False
         #     self.emg = None
         # self.pose = pose
-        # self.output()
+        self.output()
 
     def on_orientation_data(self, myo, timestamp, orientation):
         self.orientation = orientation
