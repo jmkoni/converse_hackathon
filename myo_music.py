@@ -52,10 +52,10 @@ class Listener(libmyo.DeviceListener):
         end_line = '\r' + str(myo.value) + ',' + ','.join(parts) + ""
         global client
         msg = osc_message_builder.OscMessageBuilder(address = "/data_{}".format(myo.value))
-        msg.add_arg(end_line)
+        msg.add_arg(end_line.replace(",", " "))
         msg = msg.build()
         client.send(msg)
-        print(end_line)
+        print(end_line.replace(",", " "))
         sys.stdout.flush()
 
     def on_connect(self, myo, timestamp, firmware_version):
