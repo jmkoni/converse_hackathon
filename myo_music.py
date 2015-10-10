@@ -23,34 +23,43 @@ class Listener(libmyo.DeviceListener):
         self.locked = False
         self.rssi = None
         self.emg = None
+        self.gyroscope = None
+        self.acceleration = None
         self.last_time = 0
 
-    def output(self):
-        client = udp_client.UDPClient('127.0.0.1', 8000)
-        msg = osc_message_builder.OscMessageBuilder(address = '/data')
+    def output(self, myo):
+        
         ctime = time.time()
         if (ctime - self.last_time) < self.interval:
             return
         self.last_time = ctime
         parts = []
-        # [0.64031982421875][0.06585693359375][-0.08184814453125][-0.76092529296875][<Pose: rest>][ ][ ][-60][9    ][-4   ][-12  ][-40  ][3    ][-1   ][-12  ][-54  ]
-
-        # parts = [orientation.x, orientation.y, orientation.z, orientation.w, pose, emg1, emg2, emg3, emg4, emg5, emg6, emg7, emg8]
+        # parts = [orientation.x, orientation.y, orientation.z, orientation.w, pose, emg1, emg2, emg3, emg4, emg5, emg6, emg7, emg8, gyro1, gyro2, gyro3, accel1, accel2, accel3]
+        
         if self.orientation:
             for comp in self.orientation:
-                parts.append(str(comp).ljust(15))
-        parts.append(str(self.pose.name).ljust(10))
+                parts.append(str(comp))
+        parts.append(str(self.pose.name))
         if self.emg:
             for comp in self.emg:
-                parts.append(str(comp).ljust(5))
-        end_line = '\r' + ','.join(parts) + ""
+                parts.append(str(comp))
+        if self.gyroscope:
+            for comp in self.gyroscope:
+                parts.append(str(comp))
+        if self.acceleration:
+            for comp in self.acceleration:
+                parts.append(str(comp))
+        end_line = '\r' + str(myo.value) + ',' + ','.join(parts) + ""
+        global client
+        msg = osc_message_builder.OscMessageBuilder(address = "/data_{}".format(myo.value))
         msg.add_arg(end_line)
         msg = msg.build()
         client.send(msg)
-        print(end_line.replace(" ", "").replace(",", " "))
+        print(end_line)
         sys.stdout.flush()
 
     def on_connect(self, myo, timestamp, firmware_version):
+        global msg
         myo.vibrate('short')
         myo.vibrate('short')
         myo.request_battery_level()
@@ -60,29 +69,31 @@ class Listener(libmyo.DeviceListener):
     def on_pose(self, myo, timestamp, pose):
         # maybe we want special functionality depending on a pose?
         self.pose = pose
-        self.output()
+        self.output(myo)
 
     def on_orientation_data(self, myo, timestamp, orientation):
         self.orientation = orientation
-        self.output()
+        self.output(myo)
 
     def on_accelerometor_data(self, myo, timestamp, acceleration):
-        pass
+        self.acceleration = acceleration
+        self.output(myo)
 
     def on_gyroscope_data(self, myo, timestamp, gyroscope):
-        pass
+        self.gyroscope = gyroscope
+        self.output(myo)
 
     def on_emg_data(self, myo, timestamp, emg):
         self.emg = emg
-        self.output()
+        self.output(myo)
 
     def on_unlock(self, myo, timestamp):
         self.locked = False
-        self.output()
+        self.output(myo)
 
     def on_lock(self, myo, timestamp):
         self.locked = True
-        self.output()
+        self.output(myo)
 
     def on_event(self, kind, event):
         """
@@ -140,7 +151,8 @@ def main():
     except MemoryError:
         print("Myo Hub could not be created. Make sure Myo Connect is running.")
         return
-
+    global client
+    client = udp_client.UDPClient('127.0.0.1', 8000)
     hub.set_locking_policy(libmyo.LockingPolicy.none)
     hub.run(1000, Listener())
 
