@@ -32,7 +32,6 @@ class Listener(libmyo.DeviceListener):
         if (ctime - self.last_time) < self.interval:
             return
         self.last_time = ctime
-
         parts = []
         # [0.64031982421875][0.06585693359375][-0.08184814453125][-0.76092529296875][<Pose: rest>][ ][ ][-60][9    ][-4   ][-12  ][-40  ][3    ][-1   ][-12  ][-54  ]
 
@@ -48,24 +47,19 @@ class Listener(libmyo.DeviceListener):
         msg.add_arg(end_line)
         msg = msg.build()
         client.send(msg)
-        print(end_line.replace(" ", ""))
+        print(end_line.replace(" ", "").replace(",", " "))
         sys.stdout.flush()
 
     def on_connect(self, myo, timestamp, firmware_version):
         myo.vibrate('short')
         myo.vibrate('short')
         myo.request_battery_level()
+        myo.set_stream_emg(libmyo.StreamEmg.enabled)
+        self.emg_enabled = True
 
     def on_pose(self, myo, timestamp, pose):
         # maybe we want special functionality depending on a pose?
-        # if pose == libmyo.Pose.double_tap:
-        #     myo.set_stream_emg(libmyo.StreamEmg.enabled)
-        #     self.emg_enabled = True
-        # elif pose == libmyo.Pose.fingers_spread:
-        #     myo.set_stream_emg(libmyo.StreamEmg.disabled)
-        #     self.emg_enabled = False
-        #     self.emg = None
-        # self.pose = pose
+        self.pose = pose
         self.output()
 
     def on_orientation_data(self, myo, timestamp, orientation):
