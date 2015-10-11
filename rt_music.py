@@ -1,9 +1,22 @@
 import json
-from urllib.request import urlopen, Request
+from urllib.request import urlopen, Request, urlretrieve
 from urllib.parse import quote_plus
 import time
 import base64
+import os, shutil
 
+# create/clear out folders
+folders = ['./drums', './inst1', './inst2', './inst3']
+for folder in folders:
+  if not os.path.exists(folder):
+    os.makedirs(folder)
+  else:
+    for the_file in os.listdir(folder):
+      file_path = os.path.join(folder, the_file)
+      if os.path.isfile(file_path):
+        os.unlink(file_path)
+
+# get and then display available filters
 url = urlopen('http://hackathon.indabamusic.com/samples?filters_only=true').read()
 result = json.loads(url.decode('utf-8'))
 
@@ -37,6 +50,7 @@ print("Please choose your instruments.")
 instrument_input1 = quote_plus(input("Instrument 1: "))
 instrument_input2 = quote_plus(input("Instrument 2: "))
 instrument_input3 = quote_plus(input("Instrument 3: "))
+
 # 1) one backing drum loop
 drum_url = "http://hackathon.indabamusic.com/samples?instruments=Drums&type=loop&genres={}&per_page=1".format(genre_input)
 
@@ -59,6 +73,7 @@ drum_request = "https://hackathon.indabamusic.com/samples/{}/download?indaba_uui
 drum_req = Request(drum_request, headers={'Authorization': base64.b64encode(str.encode("ab68rlMaeCOGKVCA0sqTE0EdxC4IyFjbSCZjic9K:{}".format(int(time.time()*1000)))).decode("ascii")})
 drum_resp = urlopen(req)
 drum_dl_link = json.loads(resp.read().decode('utf-8'))['download_url']
+urlretrieve(url, './drums/drum1.wav')
 
 loop1 = urlopen(loop1_url).read()
 loop1_result = json.loads(loop1.decode('utf-8'))
